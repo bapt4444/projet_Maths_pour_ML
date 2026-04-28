@@ -5,7 +5,7 @@ def softmax(scores):
     """
     Transforme les scores en probabilités avec la fonction softmax.
 
-    Paramètre :
+    Paras :
     - scores : matrice de taille (n, num_classes)
 
     Retour :
@@ -22,10 +22,9 @@ def cross_entropy_loss(Y_true, probas):
     """
     Calcule la cross-entropy moyenne entre les vrais labels et les probabilités prédites.
 
-    Paramètres :
+    Paras :
     - Y_true : matrice des vrais labels au format one-hot, de taille (n, num_classes)
-               Chaque ligne correspond à une image, et contient un seul 1 à la position
-               de la bonne classe.
+    Chaque ligne correspond à une image, et contient un seul 1 à la position de la bonne classe.
     - probas : matrice des probabilités prédites par le modèle, de taille (n, num_classes)
                Chaque ligne correspond à une image, et la somme des probabilités sur une ligne
                vaut 1.
@@ -56,13 +55,15 @@ def initialize_parameters(input_dim= 784, num_classes=10):
     """
     Role : Initialise les paramètres du modèle linéaire de facon aleatoire.
 
-    Paramètres :
+    Paras :
     - input_dim : nombre de pixels en entrée
     - num_classes : nombre de classes
 
     Retour :
-    - A : matrice des poids de dimensions (num_classes lignes , input_dim colonnes)
-    - b : vecteur biais de dimensions (1 lignes , num_classes colonnes)
+    - A : matrice des poids de dimensions (num_classes lignes, input_dim colonnes)
+    Chaque ligne correspond à une classe, et chaque colonne à un pixel.
+    - b : vecteur biais de dimensions (1 ligne, num_classes colonnes)
+    Chaque composante correspond au biais d'une classe.
     """
     A = np.random.randn(num_classes, input_dim) * 0.01
     b = np.zeros((1, num_classes))
@@ -73,10 +74,13 @@ def compute_scores(X, A, b):
     """
     Role : Calcule les scores du modèle linéaire.
 
-    Paramètres :
+    Paras :
     - X : matrice des données de dimensions (n lignes, input_dim colonnes)
-    - A : matrice des poids de dimensions (num_classes lignes , input_dim colonnes)
-    - b : vecteur biais de dimensions (1 lignes , num_classes colonnes)
+    Chaque ligne correspond à une image, et chaque colonne à un pixel.
+    - A : matrice des poids de dimensions (num_classes lignes, input_dim colonnes)
+    Chaque ligne correspond à une classe, et chaque colonne à un pixel.
+    - b : vecteur biais de dimensions (1 ligne, num_classes colonnes)
+    Chaque composante correspond au biais d'une classe.
 
     Retour :
     - scores : matrice des scores de taille (n, num_classes)
@@ -89,8 +93,9 @@ def compute_gradients(X, Y_true, probas):
     """
     Role : Calcule les gradients de la log loss par rapport aux poids A et au biais b.
 
-    Paramètres :
+    Paras :
     - X : matrice des données de dimensions (n lignes, input_dim colonnes)
+    Chaque ligne correspond à une image, et chaque colonne à un pixel.
     - Y_true : matrice des vrais labels au format one-hot, de taille (n, num_classes)
     - probas : matrice des probabilités prédites par le modèle, de taille (n, num_classes)
 
@@ -110,9 +115,11 @@ def update_parameters(A, b, dA, db, learning_rate):
     """
     Role : Met à jour les paramètres du modèle linéaire par descente de gradient.
 
-    Paramètres :
-    - A : matrice des poids
-    - b : vecteur biais
+    Paras :
+    - A : matrice des poids de dimensions (num_classes lignes, input_dim colonnes)
+    Chaque ligne correspond à une classe, et chaque colonne à un pixel.
+    - b : vecteur biais de dimensions (1 ligne, num_classes colonnes)
+    Chaque composante correspond au biais d'une classe.
     - dA : gradient de A
     - db : gradient de b
     - learning_rate : pas d'apprentissage
@@ -130,9 +137,11 @@ def train_linear_model(X, Y_true, input_dim=784, num_classes=10, learning_rate=0
     """
     Role : Entraîne le modèle linéaire par descente de gradient.
 
-    Paramètres :
+    Paras :
     - X : matrice des données de dimensions (n lignes, input_dim colonnes)
-    - Y_true : matrice des vrais labels au format one-hot et de dimensions (n, num_classes)
+    Chaque ligne correspond à une image, et chaque colonne à un pixel.
+    - Y_true : matrice des vrais labels au format one-hot, de taille (n, num_classes)
+    Chaque ligne correspond à une image, et contient un seul 1 à la position de la bonne classe.
     - input_dim : nombre de pixels en entrée
     - num_classes : nombre de classes
     - learning_rate : pas d'apprentissage
@@ -165,3 +174,40 @@ def train_linear_model(X, Y_true, input_dim=784, num_classes=10, learning_rate=0
         A, b = update_parameters(A, b, dA, db, learning_rate)
 
     return A, b, loss_history
+
+
+def predict(X, A, b):
+    """
+    Role : Prédit la classe de chaque image.
+
+    Paras :
+    - X : matrice des données de dimensions (n lignes, input_dim colonnes)
+    Chaque ligne correspond à une image, et chaque colonne à un pixel.
+    - A : matrice des poids de dimensions (num_classes lignes, input_dim colonnes)
+    Chaque ligne correspond à une classe, et chaque colonne à un pixel.
+    - b : vecteur biais de dimensions (1 ligne, num_classes colonnes)
+    Chaque composante correspond au biais d'une classe.
+
+    Retour :
+    - y_pred : vecteur des classes prédites
+    """
+    scores = compute_scores(X, A, b)
+    probas = softmax(scores)
+    y_pred = np.argmax(probas, axis=1)
+
+    return y_pred
+
+
+def accuracy(y_true, y_pred):
+    """
+    Role : Calcule l'accuracy du modèle.
+
+    Paras :
+    - y_true : vecteur des vrais labels
+    - y_pred : vecteur des labels prédits
+
+    Retour :
+    - acc : proportion de prédictions correctes
+    """
+    acc = np.mean(y_true == y_pred)
+    return acc
