@@ -12,7 +12,6 @@ import pandas as pd
 def save_results(filepath, data):
     """
     Sauvegarde les résultats dans un fichier pickle.
-    Utile si on lance les random search pendant longtemps.
     """
     with open(filepath, "wb") as f:
         pickle.dump(data, f)
