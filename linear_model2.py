@@ -1,7 +1,6 @@
 import numpy as np
 
 
-# 1. Softmax stable (évite les overflows avec np.exp)
 def softmax(scores):
     # On soustrait le max pour la stabilité numérique
     shift_scores = scores - np.max(scores, axis=1, keepdims=True)
@@ -9,7 +8,7 @@ def softmax(scores):
     return exp_scores / np.sum(exp_scores, axis=1, keepdims=True)
 
 
-# 2. Cross-entropy (inchangée, elle est déjà très bien)
+
 def cross_entropy_loss(Y_true, probas):
     epsilon = 1e-15
     probas = np.clip(probas, epsilon, 1 - epsilon)
@@ -17,7 +16,6 @@ def cross_entropy_loss(Y_true, probas):
     return - np.sum(Y_true * np.log(probas)) / n
 
 
-# 3. INITIALISATION OPTIMISÉE (Xavier/Glorot)
 def initialize_parameters(input_dim=784, num_classes=10):
     """
     On utilise l'initialisation de Xavier :
@@ -30,12 +28,10 @@ def initialize_parameters(input_dim=784, num_classes=10):
     return A, b
 
 
-# 4. Calcul des scores (inchangé)
 def compute_scores(X, A, b):
     return X @ A.T + b
 
 
-# 5. Gradients (inchangé, ta formule est parfaite)
 def compute_gradients(X, Y_true, probas):
     n = X.shape[0]
     dA = ((probas - Y_true).T @ X) / n
@@ -43,14 +39,12 @@ def compute_gradients(X, Y_true, probas):
     return dA, db
 
 
-# 6. Update (inchangé)
 def update_parameters(A, b, dA, db, learning_rate):
     A = A - learning_rate * dA
     b = b - learning_rate * db
     return A, b
 
 
-# 7. Entraînement avec petit conseil sur le Learning Rate
 def train_linear_model(X, Y_true, input_dim=784, num_classes=10, learning_rate=0.1, epochs=300):
     # Normalisation CRUCIALE si pas faite avant
     if np.max(X) > 1.0:
@@ -73,7 +67,6 @@ def train_linear_model(X, Y_true, input_dim=784, num_classes=10, learning_rate=0
 
     return A, b, loss_history
 
-# --- AJOUTE CECI DANS linear_model2.py ---
 
 def predict(X, A, b):
     """
