@@ -132,12 +132,6 @@ def compute_gradients_1_hidden(Y_true, A2, cache):
     """
     Calcule les gradients pour un MLP à une couche cachée.
 
-    On utilise les formules :
-
-    dL/da2(k,q) = 1/n sum_i z1(i,q) (P(i,k) - y_i(k))
-
-    dL/da1(q,m) = 1/n sum_i x(i,m) phi'(o1(i,q))
-                  [sum_k a2(k,q)(P(i,k)-y_i(k))]
     """
     X = cache["X"]
     O1 = cache["O1"]
@@ -147,7 +141,6 @@ def compute_gradients_1_hidden(Y_true, A2, cache):
     n = X.shape[0]
 
     # Erreur de sortie :
-    # dE_i / d o_i,k = P_i,k - y_i(k)
     dScores = probas - Y_true
 
     # Gradients de la couche de sortie
@@ -281,20 +274,6 @@ def forward_2_hidden(X, A1, b1, A2, b2, A3, b3):
 def compute_gradients_2_hidden(Y_true, A2, A3, cache):
     """
     Calcule les gradients pour un MLP à deux couches cachées.
-
-    Formules utilisées :
-
-    Couche de sortie :
-    dL/da3(k,t) = 1/n sum_i z2(i,t)(P(i,k)-y_i(k))
-
-    Deuxième couche cachée :
-    dL/da2(t,q) = 1/n sum_i z1(i,q) phi2'(o2(i,t))
-                  [sum_k a3(k,t)(P(i,k)-y_i(k))]
-
-    Première couche cachée :
-    dL/da1(q,m) = 1/n sum_i x(i,m) phi1'(o1(i,q))
-                  [sum_t a2(t,q) phi2'(o2(i,t))
-                  [sum_k a3(k,t)(P(i,k)-y_i(k))]]
     """
     X = cache["X"]
     O1 = cache["O1"]
@@ -304,21 +283,14 @@ def compute_gradients_2_hidden(Y_true, A2, A3, cache):
     probas = cache["probas"]
 
     n = X.shape[0]
-
-    # Erreur de sortie :
-    # dE_i / d o_i,k = P_i,k - y_i(k)
     dScores = probas - Y_true
 
-    # =========================
+
     # Gradients couche de sortie
-    # =========================
     dA3 = (dScores.T @ Z2) / n
     db3 = np.sum(dScores, axis=0, keepdims=True) / n
 
-    # =========================
     # Rétropropagation vers couche cachée 2
-    # =========================
-    # dZ2 correspond à l'erreur ramenée vers Z2
     dZ2 = dScores @ A3
 
     # dO2 = erreur du neurone t de la couche 2
@@ -328,10 +300,8 @@ def compute_gradients_2_hidden(Y_true, A2, A3, cache):
     dA2 = (dO2.T @ Z1) / n
     db2 = np.sum(dO2, axis=0, keepdims=True) / n
 
-    # =========================
+
     # Rétropropagation vers couche cachée 1
-    # =========================
-    # dZ1 correspond à l'erreur ramenée vers Z1
     dZ1 = dO2 @ A2
 
     # dO1 = erreur du neurone q de la couche 1
