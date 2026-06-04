@@ -57,3 +57,12 @@ class LeakyRelu(activation):
             return self.fuite
         else:
             return 1
+
+class Softmax(activation):
+    @staticmethod
+    def calcul(valeur):
+        return (1 - exp(-2*valeur))/(1 + exp(-2*valeur))
+    
+    @staticmethod
+    def derive(valeur):
+        return 1 - Tanh.calcul(valeur)**2
