@@ -2,10 +2,9 @@ import numpy as np
 from math import sqrt
 
 class Filtre():
-    def __init__(self, dim_filtre):
+    def __init__(self, dim_filtre, activation):
         self.dim_filtre = dim_filtre
-        facteur = sqrt(2/(self.dim_filtre[0]*self.dim_filtre[1]*self.dim_filtre[2]))
-        self.poids = np.random.randn(self.dim_filtre[0],self.dim_filtre[1], self.dim_filtre[2]) * facteur
+        self.poids = activation.init_poids(dim_filtre)
         self.biais = 0
     
 

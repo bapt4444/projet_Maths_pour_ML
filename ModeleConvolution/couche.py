@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from filtre import *
+from math import prod
 
 class Couche(ABC):
     @abstractmethod
@@ -11,16 +12,18 @@ class Couche(ABC):
         pass
 
 class Couche_convolution(Couche):
-    def __init__(self, nb_filtre, dim_filtre):
+    def __init__(self, nb_filtre, dim_filtre, activation, dim_entree):
         assert dim_filtre[1] % 2 == 1 and dim_filtre[2] % 2 == 1, "Les dimensions du filtres posent probleme"
         self.tab_filtre = []
+        self.activation = activation
         self.dim_filtre = dim_filtre
         self.nb_filtre = nb_filtre
         for _ in range(nb_filtre):
-            self.tab_filtre.append(Filtre(dim_filtre))
+            self.tab_filtre.append(Filtre(dim_filtre, activation))
         self.padding_hauteur = (dim_filtre[1] - 1) // 2
         self.padding_cote = (dim_filtre[2] - 1) // 2
         self.entree = None
+        self.dim_sortie = (nb_filtre, dim_entree[1], dim_entree[2])
     
     def forward(self, entree):
         assert entree.shape[0] == self.dim_filtre[0], "Probleme la taille du filtre ne corresspond pas avec la taille de l'entrée"
@@ -36,10 +39,11 @@ class Couche_convolution(Couche):
                     patch = entree_avec_padding[:, ind_ligne-self.padding_hauteur:ind_ligne+self.padding_hauteur+1, ind_col-self.padding_cote:ind_col+self.padding_cote+1]
                     mult = patch*filtre.poids
                     mat_image[ind_filtre][ind_ligne - self.padding_hauteur][ind_col - self.padding_cote] = np.sum(mult) + filtre.biais
-        return mat_image
+        return self.activation.calcul(mat_image)
 
 class Couche_max_pooling(Couche):
-    def __init__(self, dim_filtre):
+    def __init__(self, dim_filtre, dim_entree):
+        self.dim_sortie = (dim_entree[0], dim_entree[1]//2, dim_entree[2]//2)
         self.dim_filtre = dim_filtre
         self.masque = None
 
@@ -61,14 +65,26 @@ class Couche_max_pooling(Couche):
         return mat_image
 
 class Couche_Aplatissement(Couche):
+    def __init__(self, dim_entree):
+        self.dim_sortie = prod(dim_entree)
+    
     def forward(self, entree):
         return entree.flatten()
 
 class CoucheDense(Couche):
-    def __init__(self, activation, nb_neuronne):
+    def __init__(self, activation, n_entree, n_sortie):
+        self.activation = activation
+        self.dim_sortie = (n_sortie,)
+        self.biais = np.zeros(n_sortie)
+        self.n_entree = n_entree
+        self.poids = activation.init_poids((n_entree, n_sortie))
+        self.entree = None
+    
+    def forward(self, entree):
+        self.entree = entree           
+        return self.activation.calcul(entree.dot(self.poids) + self.biais)
+    
         
-
-
     
 
 
