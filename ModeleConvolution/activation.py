@@ -1,20 +1,20 @@
 from abc import ABC, abstractmethod
 from math import exp,sqrt,prod
-import numpy as np
+import cupy as np
 
 class activation(ABC):
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def calcul(valeur):
         pass
     
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def derive(valeur):
         pass
     
-    @abstractmethod
     @staticmethod
+    @abstractmethod
     def init_poids(dim):
         pass
     
@@ -89,8 +89,11 @@ class LeakyRelu(activation):
 class Softmax(activation):
     @staticmethod
     def calcul(valeur):
-        diviseur = np.sum(np.exp(valeur))
-        return np.exp(valeur)/diviseur
+        maximum = np.max(valeur)
+        valeur_stable = valeur - maximum
+        exps = np.exp(valeur_stable)
+        diviseur = np.sum(exps)
+        return exps / diviseur
     
     @staticmethod
     def init_poids(dim):
@@ -99,4 +102,4 @@ class Softmax(activation):
     
     @staticmethod
     def derive(valeur):
-        pass
+        return 1 

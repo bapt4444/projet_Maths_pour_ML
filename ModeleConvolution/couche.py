@@ -23,6 +23,8 @@ class Couche_convolution(Couche):
         self.padding_hauteur = (dim_filtre[1] - 1) // 2
         self.padding_cote = (dim_filtre[2] - 1) // 2
         self.entree = None
+        self.entree_avec_padding = None
+        self.score = None
         self.dim_sortie = (nb_filtre, dim_entree[1], dim_entree[2])
     
     def forward(self, entree):
@@ -30,16 +32,36 @@ class Couche_convolution(Couche):
         self.entree = entree
         configuration_padding = ((0,0), (self.padding_hauteur,self.padding_hauteur), (self.padding_cote, self.padding_cote))
         mat_image = np.zeros((self.nb_filtre, entree.shape[1], entree.shape[2]))
-        entree_avec_padding = np.pad(entree, pad_width=configuration_padding, mode="constant", constant_values=0)
-        dim_entree_avec_padding = entree_avec_padding.shape
+        self.entree_avec_padding = np.pad(entree, pad_width=configuration_padding, mode="constant", constant_values=0)
+        dim_entree_avec_padding = self.entree_avec_padding.shape
         for ind_filtre in range(self.nb_filtre):
             filtre = self.tab_filtre[ind_filtre]
             for ind_ligne in range(self.padding_hauteur, dim_entree_avec_padding[1] - self.padding_hauteur):
                 for ind_col in range(self.padding_cote, dim_entree_avec_padding[2] - self.padding_cote):
-                    patch = entree_avec_padding[:, ind_ligne-self.padding_hauteur:ind_ligne+self.padding_hauteur+1, ind_col-self.padding_cote:ind_col+self.padding_cote+1]
+                    patch = self.entree_avec_padding[:, ind_ligne-self.padding_hauteur:ind_ligne+self.padding_hauteur+1, ind_col-self.padding_cote:ind_col+self.padding_cote+1]
                     mult = patch*filtre.poids
                     mat_image[ind_filtre][ind_ligne - self.padding_hauteur][ind_col - self.padding_cote] = np.sum(mult) + filtre.biais
+        self.score = mat_image
         return self.activation.calcul(mat_image)
+    
+    def backward(self, gradient, learning_rate):
+        dZ = gradient * self.activation.derive(self.score)
+        gradient_precedent = np.zeros(self.entree.shape)
+        gradient_precedent_pad = np.zeros(self.entree_avec_padding.shape)
+        for ind_filtre in range(self.nb_filtre):
+            filtre = self.tab_filtre[ind_filtre]
+            dW = np.zeros(filtre.poids.shape)
+            for ind_ligne in range(self.entree.shape[1]):
+                for ind_col in range(self.entree.shape[2]):
+                    erreur_locale = dZ[ind_filtre, ind_ligne, ind_col]
+                    patch = self.entree_avec_padding[:, ind_ligne:ind_ligne + self.dim_filtre[1], ind_col:ind_col + self.dim_filtre[2]]
+                    dW += patch * erreur_locale
+                    gradient_precedent_pad[:, ind_ligne:ind_ligne + self.dim_filtre[1], ind_col:ind_col + self.dim_filtre[2]] += filtre.poids * erreur_locale
+            db = np.sum(dZ[ind_filtre])
+            filtre.poids -= learning_rate * dW
+            filtre.biais -= learning_rate * db
+        gradient_precedent = gradient_precedent_pad[:, self.padding_hauteur:-self.padding_hauteur, self.padding_cote:-self.padding_cote]
+        return gradient_precedent
 
 class Couche_max_pooling(Couche):
     def __init__(self, dim_filtre, dim_entree):
@@ -63,13 +85,21 @@ class Couche_max_pooling(Couche):
                     mat_image[ind_pro, ind_ligne, ind_col] = patch[tuple_indice]
                     self.masque[ind_pro, ind_ligne_depart + tuple_indice[0], ind_col_depart + tuple_indice[1]] = 1
         return mat_image
+    
+    def backward(self, gradient, learning_rate):
+        gradient_etire = np.repeat(gradient, self.dim_filtre[0], axis=1)
+        gradient_etire = np.repeat(gradient_etire, self.dim_filtre[1], axis=2)
+        return gradient_etire * self.masque
 
 class Couche_Aplatissement(Couche):
     def __init__(self, dim_entree):
+        self.dim_entree = dim_entree
         self.dim_sortie = prod(dim_entree)
     
     def forward(self, entree):
         return entree.flatten()
+    def backward(self, gradient, learning_rate):
+        return gradient.reshape(self.dim_entree)
 
 class CoucheDense(Couche):
     def __init__(self, activation, n_entree, n_sortie):
@@ -79,10 +109,21 @@ class CoucheDense(Couche):
         self.n_entree = n_entree
         self.poids = activation.init_poids((n_entree, n_sortie))
         self.entree = None
+        self.score = None
     
     def forward(self, entree):
-        self.entree = entree           
-        return self.activation.calcul(entree.dot(self.poids) + self.biais)
+        self.entree = entree
+        self.score = entree.dot(self.poids) + self.biais          
+        return self.activation.calcul(self.score)
+    
+    def backward(self, gradient, learning_rate):
+        dZ = gradient * self.activation.derive(self.score)
+        dW = np.outer(self.entree, dZ)
+        db = dZ
+        gradient_precedent = dZ.dot(self.poids.T)
+        self.poids = self.poids - (learning_rate * dW)
+        self.biais = self.biais - (learning_rate * db)
+        return gradient_precedent
     
         
     
