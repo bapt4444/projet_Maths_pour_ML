@@ -1,25 +1,13 @@
 import numpy as np
 
 
-
-## Fonction d'encodage des labels
 def one_hot_encode(labels, num_classes=10):
     """
-    Transforme une liste de labels entiers en matrice one-hot.
-
-    Paramètres :
-    - labels : liste contenant les labels
-    - num_classes : nombre de classes a encoder
-
-    Retour :
-    - Y : matrice où chaque ligne correspond à un label encodé en one-hot
+    Encodage one-hot vectorise.
+    labels : array de forme (n,) ou (n, 1)
     """
-    # conversion en np.array au cas ou
-    labels = np.array(labels, dtype=int)
-    n = len(labels)
-    Y = np.zeros((n, num_classes))
-
-    for i in range(n):
-        Y[i, labels[i]] = 1
-
+    labels = np.array(labels, dtype=int).reshape(-1)
+    n = labels.shape[0]
+    Y = np.zeros((n, num_classes), dtype=np.float32)
+    Y[np.arange(n), labels] = 1.0
     return Y
