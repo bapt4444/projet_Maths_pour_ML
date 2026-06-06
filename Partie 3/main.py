@@ -19,8 +19,8 @@ class_names = ["MALIGNANT", "BENIGN_WITHOUT_CALLBACK","BENIGN"]
 
 
 
-Y_train = one_hot_encode(y_train, num_classes=10)
-Y_test = one_hot_encode(y_test, num_classes=10)
+Y_train = one_hot_encode(y_train, num_classes=3)
+Y_test = one_hot_encode(y_test, num_classes=3)
 Y_train = np.asarray(Y_train)
 Y_test = np.asarray(Y_test)
 
