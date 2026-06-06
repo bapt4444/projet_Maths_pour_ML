@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
-import numpy as np
+import cupy as np
+from math import prod
+
 
 
 class activation(ABC):
@@ -34,7 +36,7 @@ class ReLU(activation):
         if len(dim) == 2:
             n_in = dim[0]
         else:
-            n_in = int(np.prod(dim[1:])) if len(dim) >= 3 else int(np.prod(dim))
+            n_in = int(prod(dim[1:])) if len(dim) >= 3 else int(prod(dim))
         facteur = np.sqrt(2.0 / n_in)
         return (np.random.randn(*dim) * facteur).astype(np.float32)
 
@@ -55,7 +57,7 @@ class Sigmoide(activation):
         if len(dim) == 2:
             n_in, n_out = dim[0], dim[1]
         else:
-            n_in = int(np.prod(dim[1:]))
+            n_in = int(prod(dim[1:]))
             n_out = dim[0]
         variance = np.sqrt(2.0 / (n_in + n_out))
         return (np.random.randn(*dim) * variance).astype(np.float32)
@@ -75,7 +77,7 @@ class Tanh(activation):
         if len(dim) == 2:
             n_in, n_out = dim[0], dim[1]
         else:
-            n_in = int(np.prod(dim[1:]))
+            n_in = int(prod(dim[1:]))
             n_out = dim[0]
         variance = np.sqrt(2.0 / (n_in + n_out))
         return (np.random.randn(*dim) * variance).astype(np.float32)
@@ -107,7 +109,7 @@ class Softmax(activation):
         if len(dim) == 2:
             n_in, n_out = dim[0], dim[1]
         else:
-            n_in = int(np.prod(dim[1:]))
+            n_in = int(prod(dim[1:]))
             n_out = dim[0]
         variance = np.sqrt(2.0 / (n_in + n_out))
         return (np.random.randn(*dim) * variance).astype(np.float32)

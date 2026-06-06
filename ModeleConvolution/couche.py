@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from math import prod
-import numpy as np
+import cupy as np
 from numpy.lib.stride_tricks import sliding_window_view
 
 
