@@ -73,8 +73,6 @@ def train_linear_model(X, Y_true, input_dim=784, num_classes=10, learning_rate=0
 
     return A, b, loss_history
 
-# --- AJOUTE CECI DANS linear_model2.py ---
-
 def predict(X, A, b):
     """
     Même logique que le modèle 1 :
