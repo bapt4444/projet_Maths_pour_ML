@@ -3,8 +3,6 @@ from math import prod
 import numpy as np
 from numpy.lib.stride_tricks import sliding_window_view
 
-from filtre import Filtre
-
 
 def im2col(entree_pad, kH, kW):
     """

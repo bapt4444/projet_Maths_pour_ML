@@ -58,8 +58,8 @@ modele.ajouter_couche_dense(Softmax, 10)
 
 
 modele.entrainer(X_train, Y_train,
-                 epochs=50,
-                 learning_rate=0.1,
+                 epochs=20,
+                 learning_rate=0.15,
                  batch_size=128,
                  X_test=X_test, Y_test=Y_test,
                  shuffle=True,
