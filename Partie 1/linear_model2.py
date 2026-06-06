@@ -1,7 +1,7 @@
 import numpy as np
 
 
-# 1. Softmax stable (évite les overflows avec np.exp)
+# 1. Softmax stable 
 def softmax(scores):
     # On soustrait le max pour la stabilité numérique
     shift_scores = scores - np.max(scores, axis=1, keepdims=True)
@@ -9,7 +9,7 @@ def softmax(scores):
     return exp_scores / np.sum(exp_scores, axis=1, keepdims=True)
 
 
-# 2. Cross-entropy (inchangée, elle est déjà très bien)
+# 2. Cross-entropy 
 def cross_entropy_loss(Y_true, probas):
     epsilon = 1e-15
     probas = np.clip(probas, epsilon, 1 - epsilon)
@@ -30,12 +30,12 @@ def initialize_parameters(input_dim=784, num_classes=10):
     return A, b
 
 
-# 4. Calcul des scores (inchangé)
+# 4. Calcul des scores 
 def compute_scores(X, A, b):
     return X @ A.T + b
 
 
-# 5. Gradients (inchangé, ta formule est parfaite)
+# 5. Gradients 
 def compute_gradients(X, Y_true, probas):
     n = X.shape[0]
     dA = ((probas - Y_true).T @ X) / n
@@ -43,7 +43,7 @@ def compute_gradients(X, Y_true, probas):
     return dA, db
 
 
-# 6. Update (inchangé)
+# 6. Update 
 def update_parameters(A, b, dA, db, learning_rate):
     A = A - learning_rate * dA
     b = b - learning_rate * db
@@ -73,7 +73,6 @@ def train_linear_model(X, Y_true, input_dim=784, num_classes=10, learning_rate=0
 
     return A, b, loss_history
 
-# --- AJOUTE CECI DANS linear_model2.py ---
 
 def predict(X, A, b):
     """
@@ -81,7 +80,6 @@ def predict(X, A, b):
     Calcul des scores -> Softmax -> Argmax
     """
     scores = X @ A.T + b
-    # Utilise le softmax stable que tu as normalement mis dans ce fichier
     probas = softmax(scores)
     return np.argmax(probas, axis=1)
 
